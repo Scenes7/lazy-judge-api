@@ -29,8 +29,8 @@ import (
 // ─── Feature flags ────────────────────────────────────────────────────────────
 // Set to true to enable writes to the corresponding DynamoDB table.
 const (
-	enableStatsWrites       = false // judge-stats  (lifetime counters)
-	enableSubmissionLogging = false // judge-submissions-sorted (per-submission records)
+	enableStatsWrites       = true // judge-stats  (lifetime counters)
+	enableSubmissionLogging = true // judge-submissions-sorted (per-submission records)
 )
 
 const (
