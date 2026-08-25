@@ -105,7 +105,7 @@ func handleGetProblem(s3Client *s3.Client, bucket string, stats *statsClient) gi
 
 const (
 	defaultRandomCount = 5
-	maxRandomCount     = 20
+	maxRandomCount     = 10
 )
 
 func handleRandomProblems(s3Client *s3.Client, bucket string, cache *problemCache, stats *statsClient) gin.HandlerFunc {

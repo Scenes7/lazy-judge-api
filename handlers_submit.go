@@ -131,15 +131,30 @@ func invokeLambda(client *lambda.Client, funcName string, req SubmitRequest, ent
 		return
 	}
 
-	msg := lr.Verdict
+	// Normalise: the Lambda may use either the normal verdict path
+	// { "verdict": "MLE", "error": "..." }  or the error path
+	// { "status": "error", "message": "MLE", "detail": "..." }.
+	// Prefer verdict; fall back to message so verdictToStatus always gets a
+	// meaningful string regardless of which shape the Lambda chose.
+	effectiveVerdict := lr.Verdict
+	if effectiveVerdict == "" {
+		effectiveVerdict = lr.Message
+	}
+	// Unify detail text from whichever field the Lambda populated.
+	effectiveDetail := lr.Error
+	if effectiveDetail == "" {
+		effectiveDetail = lr.Detail
+	}
+
+	msg := effectiveVerdict
 	if msg == "" {
 		msg = "Unknown verdict"
 	}
 	entry.appendEvent(WSEvent{
-		Status:      verdictToStatus(lr.Verdict),
+		Status:      verdictToStatus(effectiveVerdict),
 		Message:     msg,
 		Output:      lr.Output,
-		Detail:      lr.Error,
+		Detail:      effectiveDetail,
 		TestResults: lr.TestResults,
 	})
 

@@ -16,11 +16,22 @@ type SubmitRequest struct {
 }
 
 // LambdaResponse mirrors the JSON returned by the judge Lambda.
+// The Lambda uses two different shapes:
+//
+//	- Normal path: { "verdict": "Accepted" | "Wrong Answer" | "TLE" | ..., "output": ..., "error": ..., "test_results": [...] }
+//	- Error path:  { "status": "error", "message": "MLE" | "TLE" | ..., "detail": "..." }
+//
+// Both shapes are captured here; invokeLambda normalises them before mapping.
 type LambdaResponse struct {
+	// Normal verdict path
 	Verdict     string       `json:"verdict"`
 	Output      string       `json:"output"`
 	Error       string       `json:"error"`
 	TestResults []TestResult `json:"test_results"`
+	// Alternate error path (used for MLE and other resource-limit conditions)
+	Status  string `json:"status"`
+	Message string `json:"message"`
+	Detail  string `json:"detail"`
 }
 
 // TestResult is the per-test-case breakdown returned by the judge Lambda.
@@ -76,6 +87,8 @@ func verdictToStatus(verdict string) string {
 		return "compile_error"
 	case "TLE":
 		return "tle"
+	case "MLE":
+		return "mle"
 	default:
 		return "error"
 	}

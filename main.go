@@ -72,7 +72,7 @@ func main() {
 	log.Printf("CORS origins:    %v", allowedOrigins)
 
 	// ── Rate-limit pools (IP-based token buckets) ──
-	fetchLimiter := newPool(30, 1.0) // 30 burst, refill 1/sec
+	fetchLimiter := newPool(10, 0.5) // 10 burst, refill 0.5/sec
 	submitLimiter := newPool(5, 0.1) // 5 burst, refill 1/10sec
 
 	// ── Build a single shared AWS config ──
