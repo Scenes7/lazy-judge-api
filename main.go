@@ -19,6 +19,11 @@
 //   LAMBDA_FUNCTION_NAME  — default: fastjudge-runner
 //   PORT                  — default: 8080
 //   FRONTEND_ORIGIN       — default: http://localhost:3000
+//   S3_FORCE_PATH_STYLE   — default: false; set "true" for local S3-compatible
+//                           servers (LocalStack/MinIO). Never needed for real S3.
+//   AWS_ENDPOINT_URL      — override the AWS endpoint for all services (e.g.
+//                           http://localhost:4566 for LocalStack). Standard AWS
+//                           SDK env var, read automatically — no code needed.
 //
 // DynamoDB:
 //   Table:         judge-stats
@@ -95,7 +100,13 @@ func main() {
 	}
 
 	lambdaClient := lambda.NewFromConfig(awsCfg)
-	s3Client := s3.NewFromConfig(awsCfg)
+	// S3_FORCE_PATH_STYLE — opt-in for local dev against S3-compatible servers
+	// (LocalStack, MinIO) that aren't reachable via virtual-hosted-style
+	// <bucket>.<host> addressing. Never needed against real AWS S3.
+	s3PathStyle := env("S3_FORCE_PATH_STYLE", "false") == "true"
+	s3Client := s3.NewFromConfig(awsCfg, func(o *s3.Options) {
+		o.UsePathStyle = s3PathStyle
+	})
 	dbClient := dynamodb.NewFromConfig(awsCfg)
 	stats := newStatsClient(dbClient)
 
